@@ -11,5 +11,5 @@ services:
     depends_on:
       # mediator-controller:
       #   condition: service_healthy
-       db:
-         condition: service_healthy
+    db:
+      condition: service_healthy
