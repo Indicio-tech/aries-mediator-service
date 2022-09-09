@@ -1,5 +1,8 @@
 #!/bin/bash
 
+env
+exit
+
 set -euxo pipefail
 
 if [ -z  "${MEDIATOR_URL-}" ];
