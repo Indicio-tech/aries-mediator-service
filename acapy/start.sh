@@ -2,6 +2,12 @@
 
 set -euxo pipefail
 
+if [ -z  "${CA_CERT}" ] || [ "${CA_CERT}"="null" ];
+then
+    touch blank.pem
+    CA_CERT=blank.pem
+fi
+
 if [ -z  "${MEDIATOR_URL-}" ];
 then
     MEDIATOR_URL=$(curl -s http://ngrok:4040/api/tunnels | jq -r '[.tunnels[] | select(.proto == "https")][0].public_url')
