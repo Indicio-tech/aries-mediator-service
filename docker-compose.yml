@@ -61,9 +61,7 @@ services:
     build:
       context: .
       dockerfile: acapy/Dockerfile.acapy
-    restart: unless-stopped
-    volumes:
-      - ${CA_CERT}:/home/indy/ca.crt    
+    restart: unless-stopped 
     environment:
       - ENV=${ENV:-local}
       - POSTGRESQL_HOST=${POSTGRESQL_HOST:-db}
@@ -83,6 +81,7 @@ services:
       - MEDIATOR_CONTROLLER_WEBHOOK=${MEDIATOR_CONTROLLER_WEBHOOK:-http://mediator-controller:3010/webhooks}
       - MEDIATOR_AGENT_ADMIN_API_KEY=${MEDIATOR_AGENT_ADMIN_API_KEY}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - CA_CERT=${CA_CERT}
     # ports: # Uncomment to access mediator outside of containers
     #   - ${MEDIATOR_AGENT_HTTP_ADMIN_PORT:-3002}:${MEDIATOR_AGENT_HTTP_ADMIN_PORT:-3002}
     #   - ${MEDIATOR_AGENT_HTTP_IN_PORT:-3000}:${MEDIATOR_AGENT_HTTP_IN_PORT:-3000}
