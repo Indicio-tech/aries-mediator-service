@@ -38,8 +38,9 @@ const initializeAgent = async (withMediation, port) => {
         endpoints: endpoints,
 
         autoAcceptInvitation: true,
-        // logger: new ariesCore.ConsoleLogger(ariesCore.LogLevel.trace),
+        //logger: new ariesCore.ConsoleLogger(ariesCore.LogLevel.trace),
         mediatorConnectionsInvite: mediation_url,
+        mediatorPickupStrategy: ariesCore.MediatorPickupStrategy.PickUpV2,
     }
 
     if (withMediation) {
@@ -277,6 +278,7 @@ rl.prompt(false)
 
 
 const handleError = async (e) => {
+    throw e;
     process.stdout.write(JSON.stringify({'error':1, 'result': e}) + "\n")
 }
 
@@ -325,13 +327,13 @@ process.once('SIGTERM', function (code) {
 
 // Is there a better way to handle this. 
 // TODO it is recommended to shutdown the agent after an error like this...
-process
-  .on('unhandledRejection', (reason, p) => {
-    handleError(reason);
-    process.exit(1);
-  })
-  .on('uncaughtException', err => {
-    handleError(err);
-    process.exit(1);
-  });
+// process
+//   .on('unhandledRejection', (reason, p) => {
+//     handleError(reason);
+//     process.exit(1);
+//   })
+//   .on('uncaughtException', err => {
+//     handleError(err);
+//     process.exit(1);
+//   });
   
