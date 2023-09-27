@@ -2,7 +2,10 @@
 
 ## TL;DR
 
-This repository provides a simple process for a developer to run an Aries mediator agent. You should be able to bring the stack on-line by copying `.env.sample` to `.env`, copying `docker-compose.dev.yml` to `docker-compose.override.yml`  and running `docker-compose up`. For more information, keep reading.
+This repository provides a simple process for a developer to run an Aries mediator agent. You should be able to bring the stack on-line by copying `.env.sample` to `.env` and running `docker-compose up`. For more information, keep reading.
+
+### Multitenant ACA-Py load testing
+Please see [Multi-demo Load Test](../multi-agent-load-test/README.md) for running mediator load testing against a local ACA-Py instance in multitenant mode.
 
 ## Build & Run 
 
@@ -32,7 +35,7 @@ In any case, I think its more clear and consumable to have a single URL.
 
 The mediator is configured to allow it to automatically accept connections. This functionality can be delegated to a controller process if business rules require approval / intervention before accepting a connection. A sample controller to do this is included with the project.
 
-This custom **nodejs** app, written in TypeScript, uses [Feathers JS](https://feathersjs.com) to provide RESTFull endpoints to ACA-py. To enable the controller and have it determine if connections should be accepted:
+This custom **nodejs** app, written in TypeScript, uses [Feathers JS](https://feathersjs.com) to provide RESTFull endpoints to ACA-Py. To enable the controller and have it determine if connections should be accepted:
 
 1. Update the mediator configuration
 
@@ -59,13 +62,16 @@ Remove these two lines from the [docker-compose.yml](./docker-compose.yml) file 
 
 ### Mediator
 
-A mediator is just a special type of agent. In this case, the mediator is ACA-py, with a few special config params, into make it run as a "mediator" rather than a traditional agent.
+A mediator is just a special type of agent. In this case, the mediator is ACA-Py, with a few special config params, into make it run as a "mediator" rather than a traditional agent.
 
-About 1/2 of the params for ACA-py are provided in `start.sh`, others are passed via a configuration file [mediator-auto-accept.yml](./acapy/configs/mediator.yml). Move them around as you see fit. Ones that are likely to change are better kept as environment variables.
+About 1/2 of the params for ACA-Py are provided in `start.sh`, others are passed via a configuration file [mediator-auto-accept.yml](./acapy/configs/mediator.yml). Move them around as you see fit. Ones that are likely to change are better kept as environment variables.
+
+By default, ACA-Py is using [Aries Askar](https://github.com/hyperledger/aries-askar) and the related stored components for managing secure data and keys. If you want to use the older [Indy SDK](https://github.com/hyperledger/indy-sdk),
+you can edit (or override) the `--wallet-type` parameters in `start.sh` to be `--wallet-type indy`.  If you change this after starting with Askar storage, make sure that you delete the database before proceeding (`docker volume rm aries-mediator-service_agency-wallet`).
 
 ### PostgreSQL
 
-[PostgreSQL](https://www.postgresql.org) is well known RDBMS. It is used by the mediator persist wallet information. Without it, the wallet would be reset every time the stack is restarted. The first time the mediator container runs it will create a database for its wallet and initialize the wallet state.
+[PostgreSQL](https://www.postgresql.org) is a well known RDBMS. It is used by the mediator persist wallet information. Without it, the wallet would be reset every time the stack is restarted. The first time the mediator container runs it will create a database for its wallet and initialize the wallet state.
 
 ### Run It !
 
@@ -77,10 +83,10 @@ About 1/2 of the params for ACA-py are provided in `start.sh`, others are passed
 git clone git@github.com:fullboar/aries-mediator-service.git
 ```
 
-2. Copy the file `env.sample` to `.env` in the root of the project. The default values are fine, edit as you see fit. This file will be used by `docker-compose` to add or override any environment variables.
+2. Copy the file `.env.sample` to `.env` in the root of the project. The default values are fine, edit as you see fit. This file will be used by `docker-compose` to add or override any environment variables.
 
 ```console
-cp env.sample .env
+cp .env.sample .env
 ```
 
 Pro Tip 🤓
@@ -123,7 +129,16 @@ The general workaround steps are:
 - start `ngrok` outside of a container and update the MEDIATOR_URL in [start.sh](./acapy/start.sh);
 - give postgres a persistent volume;
 
-### Aries Bifold Wallet Integration
+## Load Testing
+
+See the `load-testing` folder for a tool to use in testing a mediator. The load
+tool runs multiple agents, each connecting to the mediator and then periodically
+sending a ping. See how to use the load tester in the [Load Testing
+README](./load-testing/README.md) file. Once you start your local mediator, copy
+the Mediator Invitation URL, pasting it into the load testing `.env` file and
+start the load tester.
+
+## Aries Bifold Wallet Integration
 
 You can easily use your newly minted mediator with the [Aries Bifold wallet](https://github.com/hyperledger/aries-mobile-agent-react-native). Take the full invitation URL from above and provide it to Bifold through the `MEDIATOR_URL` parameter. This can be in the form of an environment variable or, a more reliable way is to create a `.env` file in the root of the project with the parameter `MEDIATOR_URL` in it like this:
 
@@ -135,7 +150,7 @@ MEDIATOR_URL=https://ed49-70-67-240-52.ngrok.io?c_i=eyJAdHlwZSI6ICJkaWQ6c292OkJ6
 
 ### How does Bifold talk to the Mediator?
 
-I struggled quite a bit with how HTTP/s and WSS are managed internally. The key, for me, was the `--endpoint` argument in ACA-py. To run a mediator, and maybe other agents, it takes two params for this argument. The first is the HTTP/s endpoint and the second is the `WSS` endpoint.
+I struggled quite a bit with how HTTP/s and WSS are managed internally. The key, for me, was the `--endpoint` argument in ACA-Py. To run a mediator, and maybe other agents, it takes two params for this argument. The first is the HTTP/s endpoint and the second is the `WSS` endpoint.
 
 The HTTP/s endpoints, as per the docs on this param, will be used for invitations. Its going to be how your wallet finds and opens a dialogue with the mediator. Once a connection is established the WSS endpoint will be how the mediator and your wallet primarily communicated; they will message over the WebSocket. 
 
@@ -147,7 +162,7 @@ I've used one URL and setup Caddy to route traffic to the correct port on the me
 
 ### Are there other ways to manage transports?
 
-Sure. There is a ACA-py plug-in that will allow it to take both HTTP/s and WSS traffic over a single port. You can find it in the [Plugin Toolbox](https://github.com/hyperledger/aries-acapy-plugin-toolbox)
+Sure. There is a ACA-Py plug-in that will allow it to take both HTTP/s and WSS traffic over a single port. You can find it in the [Plugin Toolbox](https://github.com/hyperledger/aries-acapy-plugin-toolbox)
 
 My pro-tip is use Caddy. Reverse proxies are a tried and tru technology.
 
