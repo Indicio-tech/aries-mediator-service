@@ -18,6 +18,10 @@ COPY acapy/configs configs
 COPY acapy/plugins plugins
 RUN pip3 install --no-cache-dir -e plugins/firebase_push_notifications
 
+COPY acapy/requirements-latest.txt ./
+
+RUN pip install -r ./requirements-latest.txt
+
 RUN chmod +x start.sh && \
   aca-py --version > ./acapy-version.txt
 

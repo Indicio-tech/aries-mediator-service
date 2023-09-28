@@ -11,7 +11,6 @@ echo "Starting agent with endpoint(s): ${MEDIATOR_URL} ws${MEDIATOR_URL/http/}"
 acapyCommand=(
     'aca-py'
     'start'
-    '--plugin acapy_plugin_pickup'
     '--auto-provision'
     '--arg-file' "${MEDIATOR_ARG_FILE}"
     '--label' "${MEDIATOR_AGENT_LABEL}"
@@ -25,6 +24,7 @@ acapyCommand=(
     '--admin' '0.0.0.0' "${MEDIATOR_AGENT_HTTP_ADMIN_PORT}"
     '--admin-api-key' "${MEDIATOR_AGENT_ADMIN_API_KEY}"
     '--endpoint' "${MEDIATOR_URL}" wss://"${MEDIATOR_URL#*://*}"
+    '--plugin' 'acapy_plugin_pickup'
 )
 
 if [ "${USE_FIREBASE_PLUGIN}" = "true" ]; then
