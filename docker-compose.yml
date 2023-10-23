@@ -99,12 +99,12 @@ services:
       retries: 5
 
   db:
-    image: postgres:10
+    image: postgres:15
     # restart: always
     environment:
       POSTGRES_PASSWORD: ${POSTGRESQL_ADMIN_PASSWORD:-development}
-    # ports: # Uncomment to access postgres outside of containers
-    # - "5432:5432"
+    #ports: # Uncomment to access postgres outside of containers
+    #  - "5432:5432"
     networks:
       - mediator-network
     volumes:
