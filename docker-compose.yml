@@ -19,8 +19,11 @@ services:
       - EMAIL_ADDRESS=${EMAIL_ADDRESS:-internal}
     networks:
       - mediator-network
+    #ports: # Uncomment to access caddy outside of containers
+    #  - 2015:2015
+    #   - 2019:2019
     volumes:
-      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:z
     healthcheck:
       # Port 2019 is an internal Caddy admin port.
       test: nc -zv localhost:2019 || exit -1
@@ -42,8 +45,8 @@ services:
       - MEDIATOR_ALIAS=${MEDIATOR_ALIAS}
       - LOG_LEVEL=${LOG_LEVEL}
     volumes:
-      - ./acapy/controller:/usr/src/controller
-      - mediator-controller-data:/usr/src/controller/node_modules
+      - ./acapy/controller:/usr/src/controller:z
+      - mediator-controller-data:/usr/src/controller/node_modules:z
     # ports: # Uncomment to access controller outside of containers
     #   - ${MEDIATOR_CONTROLLER_PORT:-3010}:${MEDIATOR_CONTROLLER_PORT:-3010}
     networks:
@@ -86,6 +89,11 @@ services:
       - MEDIATOR_CONTROLLER_WEBHOOK=${MEDIATOR_CONTROLLER_WEBHOOK:-http://mediator-controller:3010/webhooks}
       - MEDIATOR_AGENT_ADMIN_API_KEY=${MEDIATOR_AGENT_ADMIN_API_KEY}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - USE_FIREBASE_PLUGIN=${USE_FIREBASE_PLUGIN:-false}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_NOTIFICATION_TITLE=${FIREBASE_NOTIFICATION_TITLE}
+      - FIREBASE_NOTIFICATION_BODY=${FIREBASE_NOTIFICATION_BODY}
+      - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
     # ports: # Uncomment to access mediator outside of containers
     #   - ${MEDIATOR_AGENT_HTTP_ADMIN_PORT:-3002}:${MEDIATOR_AGENT_HTTP_ADMIN_PORT:-3002}
     #   - ${MEDIATOR_AGENT_HTTP_IN_PORT:-3000}:${MEDIATOR_AGENT_HTTP_IN_PORT:-3000}
@@ -99,7 +107,7 @@ services:
       retries: 5
 
   db:
-    image: postgres:10
+    image: postgres:15
     # restart: always
     environment:
       POSTGRES_PASSWORD: ${POSTGRESQL_ADMIN_PASSWORD:-development}
@@ -108,7 +116,7 @@ services:
     networks:
       - mediator-network
     volumes:
-      - agency-wallet:/var/lib/pgsql/data
+      - agency-wallet:/var/lib/pgsql/data:z
     healthcheck:
       test: pg_isready -U postgres
       interval: 3s

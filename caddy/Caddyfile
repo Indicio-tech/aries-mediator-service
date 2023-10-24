@@ -22,7 +22,7 @@
 	log {
 			output stdout 
 			# format single_field common_log
-			level DEBUG
+			level ERROR
 	}
 
 	tls {$EMAIL_ADDRESS}
